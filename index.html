@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Quiz Interativo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #333;
+    margin: 0; padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  h1 {
+    margin-top: 40px;
+    color: white;
+    font-weight: 600;
+    font-size: 2.8rem;
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.3);
+  }
+
+  #home, #chat {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    padding: 25px 30px;
+    margin: 30px 0;
+    width: 90%;
+    max-width: 520px;
+    text-align: center;
+  }
+
+  button {
+    background: #764ba2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 14px 20px;
+    margin: 10px 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.3s ease;
+    min-width: 140px;
+  }
+
+  button:hover {
+    background: #5b357a;
+  }
+
+  .option-btn {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 12px auto;
+    text-align: left;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  }
+
+  #tema-titulo {
+    font-size: 1.8rem;
+    color: #764ba2;
+    margin-bottom: 18px;
+    font-weight: 700;
+  }
+
+  #pergunta {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    min-height: 60px;
+  }
+
+  .feedback {
+    font-weight: 700;
+    margin-top: 15px;
+    min-height: 28px;
+    font-size: 1.1rem;
+  }
+
+  #pontuacao {
+    margin-top: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #333;
+  }
+
+  #resultado-salvo {
+    font-size: 0.9rem;
+    color: #444;
+    margin-top: 15px;
+    font-style: italic;
+  }
+
+  #btn-voltar {
+    background: #e14eca;
+    margin-bottom: 20px;
+  }
+
+  #btn-voltar:hover {
+    background: #a2398f;
+  }
+</style>
+</head>
+<body>
+
+<h1>Escolha um tema para começar o quiz</h1>
+
+<div id="home">
+  <button onclick="startChat('tecnologia')">Tecnologia</button>
+  <button onclick="startChat('games')">Games</button>
+  <button onclick="startChat('animes')">Animes</button>
+  <button onclick="startChat('animais')">Animais</button>
+  <button onclick="startChat('matematica')">Desafios Matemáticos</button>
+
+  <div id="resultado-salvo"></div>
+</div>
+
+<div id="chat" class="hidden">
+  <button id="btn-voltar" onclick="backHome()">← Voltar para temas</button>
+  <div id="chat-area">
+    <h2 id="tema-titulo"></h2>
+    <p id="pergunta"></p>
+    <div id="opcoes"></div>
+    <div id="feedback" class="feedback"></div>
+    <div id="pontuacao"></div>
+  </div>
+</div>
+
+<script>
+  const quizzes = {
+    tecnologia: [
+      { pergunta: "Qual dessas linguagens é usada para estilizar páginas web?", opcoes: ["HTML", "CSS", "JavaScript", "Python"], correta: 1 },
+      { pergunta: "O que significa 'CPU' em um computador?", opcoes: ["Central Process Unit", "Central Processing Unit", "Computer Personal Unit", "Central Power Unit"], correta: 1 },
+      { pergunta: "Qual empresa desenvolveu o sistema operacional Windows?", opcoes: ["Apple", "Google", "Microsoft", "IBM"], correta: 2 },
+      { pergunta: "O que é um 'browser'?", opcoes: ["Programa para navegar na internet", "Processador", "Memória RAM", "Placa de vídeo"], correta: 0 }
+    ],
+    games: [
+      { pergunta: "Qual jogo é conhecido por construir com blocos em um mundo aberto?", opcoes: ["Minecraft", "Fortnite", "League of Legends", "Among Us"], correta: 0 },
+      { pergunta: "Em que jogo você coleta 'pokémons'?", opcoes: ["Pokémon Go", "Call of Duty", "FIFA", "Minecraft"], correta: 0 },
+      { pergunta: "Qual personagem é o mascote da Nintendo?", opcoes: ["Sonic", "Mario", "Pac-Man", "Link"], correta: 1 },
+      { pergunta: "Qual jogo é famoso por sua batalha real e construção de estruturas?", opcoes: ["Call of Duty", "Fortnite", "Apex Legends", "Valorant"], correta: 1 },
+      { pergunta: "Qual jogo é conhecido por sua narrativa épica e mundo aberto cheio de dragões?", opcoes: ["The Witcher 3", "Skyrim", "Dark Souls", "Final Fantasy"], correta: 1 },
+      { pergunta: "Qual jogo é famoso por sua jogabilidade cooperativa e resolução de quebra-cabeças?", opcoes: ["Portal 2", "Overcooked", "Cuphead", "Stardew Valley"], correta: 0 }
+    ],
+    animes: [
+      { pergunta: "Quem é o protagonista de 'Naruto'?", opcoes: ["Sasuke", "Naruto Uzumaki", "Sakura", "Kakashi"], correta: 1 },
+      { pergunta: "Em 'One Piece', quem é o capitão dos Chapéus de Palha?", opcoes: ["Zoro", "Luffy", "Sanji", "Nami"], correta: 1 },
+      { pergunta: "Qual anime se passa em um colégio para caçadores de monstros?", opcoes: ["My Hero Academia", "Bleach", "Tokyo Ghoul", "Demon Slayer"], correta: 0 },
+      { pergunta: "Qual é o nome do protagonista de 'Attack on Titan'?", opcoes: ["Eren Yeager", "Levi Ackerman", "Armin Arlert", "Mikasa Ackerman"], correta: 0 },
+      { pergunta: "Em 'Death Note', qual é o nome do detetive que persegue Kira?", opcoes: ["L", "Light Yagami", "Ryuk", "Misa Amane"], correta: 0 },
+      { pergunta: "Qual anime é conhecido por sua batalha entre ninjas e jutsus?", opcoes: ["Naruto", "Dragon Ball", "One Piece", "Bleach"], correta: 0 }
+    ],
+    animais: [
+      { pergunta: "Qual é o maior animal terrestre?", opcoes: ["Elefante", "Girafa", "Hipopótamo", "Rinoceronte"], correta: 0 },
+      { pergunta: "Qual animal é conhecido por sua habilidade de mudar de cor?", opcoes: ["Camaleão", "Leão", "Cavalo", "Tigre"], correta: 0 },
+      { pergunta: "Qual animal é o mais rápido do mundo?", opcoes: ["Guepardo", "Falcão-peregrino", "Leopardo", "Águia"], correta: 1 },
+      { pergunta: "Qual animal é conhecido por sua inteligência e capacidade de resolver problemas?", opcoes: ["Golfinho", "Cão", "Gato", "Elefante"], correta: 0 },
+      { pergunta: "Qual animal é conhecido por sua habilidade de voar e migrar longas distâncias?", opcoes: ["Pinguim", "Águia", "Andorinha", "Coruja"], correta: 2 },
+      { pergunta: "Qual é o animal que pode sobreviver sem água por mais tempo?", opcoes: ["Camelo", "Girafa", "Leopardo", "Zebra"], correta: 0 }
+    ],
+    matematica: [
+      { pergunta: "Quanto é 7 + 5?", opcoes: ["10", "11", "12", "13"], correta: 2 },
+      { pergunta: "Qual é o resultado de 9 x 3?", opcoes: ["27", "21", "30", "18"], correta: 0 },
+      { pergunta: "Se você tem 10 maçãs e come 3, quantas sobraram?", opcoes: ["7", "8", "6", "5"], correta: 0 },
+      { pergunta: "Quanto é 12 + 5?", opcoes: ["10", "17", "12", "19"], correta: 1 },
+      { pergunta: "Qual é a raiz quadrada de 64?", opcoes: ["6", "7", "8", "9"], correta: 2 },
+      { pergunta: "Se você tem 20 laranjas e dá 4 para um amigo, quantas laranjas você tem agora?", opcoes: ["16", "18", "20", "22"], correta: 0 }
+    ]
+  };
+
+  let currentTheme = "";
+  let currentQuiz = [];
+  let currentQuestionIndex = 0;
+  let score = 0;
+
+  const homeElem = document.getElementById("home");
+  const chatElem = document.getElementById("chat");
+  const temaTituloElem = document.getElementById("tema-titulo");
+  const perguntaElem = document.getElementById("pergunta");
+  const opcoesElem = document.getElementById("opcoes");
+  const feedbackElem = document.getElementById("feedback");
+  const pontuacaoElem = document.getElementById("pontuacao");
+  const resultadoSalvoElem = document.getElementById("resultado-salvo");
+
+  // Mostrar resultado salvo do último jogo
+  function mostrarResultadoSalvo() {
+    const resultadoJSON = localStorage.getItem("resultadoQuiz");
+    if (!resultadoJSON) {
+      resultadoSalvoElem.innerText = "Nenhum resultado salvo ainda.";
+      return;
+    }
+
+    const resultado = JSON.parse(resultadoJSON);
+    resultadoSalvoElem.innerText = `Último resultado — Tema: ${capitalize(resultado.tema)}, Pontuação: ${resultado.pontos}/${resultado.total}`;
+  }
+
+  function startChat(theme) {
+    currentTheme = theme;
+    currentQuiz = quizzes[theme];
+    currentQuestionIndex = 0;
+    score = 0;
+
+    homeElem.classList.add("hidden");
+    chatElem.classList.remove("hidden");
+
+    temaTituloElem.innerText = "Tema: " + capitalize(theme);
+    pontuacaoElem.innerText = `Pontuação: 0 / ${currentQuiz.length}`;
+    feedbackElem.innerText = "";
+
+    showQuestion();
+  }
+
+  function showQuestion() {
+    feedbackElem.innerText = "";
+    pontuacaoElem.innerText = `Pontuação: ${score} / ${currentQuiz.length}`;
+
+    if (currentQuestionIndex >= currentQuiz.length) {
+      perguntaElem.innerText = `Parabéns! Você terminou o quiz com ${score} pontos de ${currentQuiz.length}.`;
+
+      opcoesElem.innerHTML = "";
+
+      // Salvar resultado
+      localStorage.setItem("resultadoQuiz", JSON.stringify({
+        tema: currentTheme,
+        pontos: score,
+        total: currentQuiz.length
+      }));
+
+      // Mostrar no home também
+      mostrarResultadoSalvo();
+
+      return;
+    }
+
+    const questao = currentQuiz[currentQuestionIndex];
+    perguntaElem.innerText = questao.pergunta;
+    opcoesElem.innerHTML = "";
+
+    questao.opcoes.forEach((opcao, i) => {
+      const btn = document.createElement("button");
+      btn.classList.add("option-btn");
+      btn.innerText = opcao;
+      btn.onclick = () => verificarResposta(i);
+      opcoesElem.appendChild(btn);
+    });
+  }
+
+  function verificarResposta(respostaSelecionada) {
+    const questao = currentQuiz[currentQuestionIndex];
+
+    if (respostaSelecionada === questao.correta) {
+      feedbackElem.style.color = "green";
+      feedbackElem.innerText = "Resposta correta!";
+      score++;
+    } else {
+      feedbackElem.style.color = "red";
+      feedbackElem.innerText = `Resposta errada! A correta é: "${questao.opcoes[questao.correta]}"`;
+    }
+
+    currentQuestionIndex++;
+
+    pontuacaoElem.innerText = `Pontuação: ${score} / ${currentQuiz.length}`;
+
+    setTimeout(() => {
+      showQuestion();
+    }, 1500);
+  }
+
+  function backHome() {
+    chatElem.classList.add("hidden");
+    homeElem.classList.remove("hidden");
+    feedbackElem.innerText = "";
+    pontuacaoElem.innerText = "";
+  }
+
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  // Mostrar resultado salvo ao carregar a página
+  mostrarResultadoSalvo();
+</script>
+
+</body>
+</html>
+<!--
+  Este é um quiz interativo simples que permite aos usuários escolherem um tema e responderem perguntas.
+  As perguntas são armazenadas em um objeto JavaScript e o resultado é salvo no localStorage.
+  O design é responsivo e utiliza uma paleta de cores agradável.
+
